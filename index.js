@@ -13,18 +13,14 @@ const port = 5000
 app.use(express.json());
 
 
+// CORS Setup – allow only your frontend domain
 app.use(cors({
-  origin: ['http://localhost:5000', 'http://localhost:3000', '*', 'http://localhost:8000'],
+  origin: 'https://ssjmatha.in',  // ✅ Use your actual frontend domain
   credentials: true,
-  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
-
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization']
 }));
 
-app.use(cors({
-  origin: '*',
-  methods: ['GET','POST','DELETE','UPDATE','PUT','PATCH']
-
-}));
 
 //Available Routes
 
