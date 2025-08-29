@@ -37,23 +37,14 @@ const storage = multer.diskStorage({
   });
   const upload = multer({ storage });
   // FOR image uploading without token authentication
-router.post('/uploadimage', upload.single('image'), async (req, res) => {
+router.post('/uploadimage/:id', upload.single('image'), async (req, res) => {
   try {
-    const userId = req.header("id"); // Get userId from header
-    if (!userId) {
-      return res.status(400).send({ error: "User ID is required" });
-    }
+    const userId = req.params.id;
+    if (!userId) return res.status(400).send({ error: "User ID is required" });
+    if (!req.file) return res.status(400).json({ success: false, error: "No image uploaded" });
 
-    // ✅ Add this check for missing file
-    if (!req.file) {
-      return res.status(400).json({ success: false, error: "No image uploaded" });
-    }
-
-    const imageUrl = req.file.path; // Path to uploaded image
-    console.log(req.file);
-
-    // Update the User model with imageUrl
-    await User.findByIdAndUpdate(userId, { $set: { image: imageUrl } });
+    const imageUrl = req.file.path;
+    await User.findByIdAndUpdate(userId, { image: imageUrl });
 
     res.json({ success: true, message: 'Image uploaded successfully' });
   } catch (error) {
@@ -332,17 +323,13 @@ router.delete('/deleteuser/:userId', async (req, res) => {
   });
 // **** To get the user details   /auth/getuser        ---- LOGIN REQUIRED  ----- */
 // Remove fetchuser middleware
-router.get('/getuser', async (req, res) => {
+router.get('/getuser/:id', async (req, res) => {
   try {
-    const userId = req.header("id"); // Get user ID from request header
-    if (!userId) {
-      return res.status(400).send({ error: "User ID is required" });
-    }
+    const userId = req.params.id; // get from URL
+    if (!userId) return res.status(400).send({ error: "User ID is required" });
 
     const user = await User.findById(userId).select('-password');
-    if (!user) {
-      return res.status(404).send({ error: "User not found" });
-    }
+    if (!user) return res.status(404).send({ error: "User not found" });
 
     res.json(user);
   } catch (error) {
@@ -350,6 +337,7 @@ router.get('/getuser', async (req, res) => {
     res.status(500).send("Internal Server Error");
   }
 });
+
 
 // For getting particular user details
 router.get('/getuserbyid', async (req, res) => {
@@ -366,20 +354,17 @@ router.get('/getuserbyid', async (req, res) => {
     }
 })
 // Edit own profile - LOGIN REQUIRED
-router.put('/editprofile', async (req, res) => {
+router.put('/editprofile/:id', async (req, res) => {
   try {
-    const userId = req.header("id"); // Get user ID from header
+    const userId = req.params.id;
     const updates = req.body;
 
-    // Prevent password updates here for security reasons
     if (updates.password) {
       return res.status(400).json({ success: false, error: 'Use reset password flow to change password.' });
     }
 
     const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
-    if (!user) {
-      return res.status(404).json({ success: false, error: 'User not found' });
-    }
+    if (!user) return res.status(404).json({ success: false, error: 'User not found' });
 
     res.json({ success: true, message: 'Profile updated successfully', user });
   } catch (error) {
