@@ -36,22 +36,33 @@ const storage = multer.diskStorage({
     },
   });
   const upload = multer({ storage });
-  router.post('/uploadimage', fetchuser, upload.single('image'), async (req, res) => {
-    try {
-      // Update the organizer's profile with the image URL or other relevant data
-      const userId = req.user.id;
-      const imageUrl = req.file.path; // This will be the path to the uploaded image
-      console.log(req.file)
-      let success = false;
-      // Update the Organizer model with the imageUrl
-      await User.findByIdAndUpdate(userId, { $set: { image: imageUrl } });
-      success = true
-      res.json({success,  message: 'Image uploaded successfully' });
-    } catch (error) {
-      console.error(error);
-      res.status(500).send('Internal Server Error');
+  // FOR image uploading without token authentication
+router.post('/uploadimage', upload.single('image'), async (req, res) => {
+  try {
+    const userId = req.header("id"); // Get userId from header
+    if (!userId) {
+      return res.status(400).send({ error: "User ID is required" });
     }
-  });
+
+    // ✅ Add this check for missing file
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No image uploaded" });
+    }
+
+    const imageUrl = req.file.path; // Path to uploaded image
+    console.log(req.file);
+
+    // Update the User model with imageUrl
+    await User.findByIdAndUpdate(userId, { $set: { image: imageUrl } });
+
+    res.json({ success: true, message: 'Image uploaded successfully' });
+  } catch (error) {
+    console.error(error);
+    res.status(500).send('Internal Server Error');
+  }
+});
+
+
 //**** For creating user /auth/createUser        ---- No LOGIN REQUIRED  ----- */
 router.post('/page1/createuser', [
 
@@ -248,7 +259,12 @@ router.post('/login', [
         }
         const authToken = jwt.sign(data, JWT_SECRET);
         success = true;
-        res.json({ success, authToken });
+res.json({ 
+    success, 
+    authToken, 
+    user: { id: user._id, name: user.name, email: user.email } // send userId
+});
+
 
         //res.json({success: "User created successfully"});
     }
@@ -315,18 +331,26 @@ router.delete('/deleteuser/:userId', async (req, res) => {
     }
   });
 // **** To get the user details   /auth/getuser        ---- LOGIN REQUIRED  ----- */
-router.get('/getuser', fetchuser, async (req, res) => {
-    try {
-        const userId = req.user.id;
+// Remove fetchuser middleware
+router.get('/getuser', async (req, res) => {
+  try {
+    const userId = req.header("id"); // Get user ID from request header
+    if (!userId) {
+      return res.status(400).send({ error: "User ID is required" });
+    }
 
-        const user = await User.findById(userId).select('-password');
-        res.send(user);
+    const user = await User.findById(userId).select('-password');
+    if (!user) {
+      return res.status(404).send({ error: "User not found" });
     }
-    catch (error) {
-        console.error(error);
-        res.status(500).send("Internal Server Error");
-    }
-})
+
+    res.json(user);
+  } catch (error) {
+    console.error(error);
+    res.status(500).send("Internal Server Error");
+  }
+});
+
 // For getting particular user details
 router.get('/getuserbyid', async (req, res) => {
     try {
