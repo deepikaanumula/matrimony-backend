@@ -37,6 +37,7 @@ const storage = multer.diskStorage({
   });
   const upload = multer({ storage });
   // FOR image uploading without token authentication
+// ✅ Upload image – NO TOKEN REQUIRED
 router.post('/uploadimage/:id', upload.single('image'), async (req, res) => {
   try {
     const userId = req.params.id;
@@ -52,6 +53,7 @@ router.post('/uploadimage/:id', upload.single('image'), async (req, res) => {
     res.status(500).send('Internal Server Error');
   }
 });
+
 
 
 //**** For creating user /auth/createUser        ---- No LOGIN REQUIRED  ----- */
@@ -323,20 +325,22 @@ router.delete('/deleteuser/:userId', async (req, res) => {
   });
 // **** To get the user details   /auth/getuser        ---- LOGIN REQUIRED  ----- */
 // Remove fetchuser middleware
+// ✅ Get user profile by ID – NO TOKEN REQUIRED
 router.get('/getuser/:id', async (req, res) => {
   try {
-    const userId = req.params.id; // get from URL
-    if (!userId) return res.status(400).send({ error: "User ID is required" });
+    const userId = req.params.id;
+    if (!userId) return res.status(400).json({ error: "User ID is required" });
 
     const user = await User.findById(userId).select('-password');
-    if (!user) return res.status(404).send({ error: "User not found" });
+    if (!user) return res.status(404).json({ error: "User not found" });
 
     res.json(user);
   } catch (error) {
     console.error(error);
-    res.status(500).send("Internal Server Error");
+    res.status(500).json({ error: "Internal Server Error" });
   }
 });
+
 
 
 // For getting particular user details
@@ -354,13 +358,14 @@ router.get('/getuserbyid', async (req, res) => {
     }
 })
 // Edit own profile - LOGIN REQUIRED
+// ✅ Edit profile by ID – NO TOKEN REQUIRED
 router.put('/editprofile/:id', async (req, res) => {
   try {
     const userId = req.params.id;
     const updates = req.body;
 
     if (updates.password) {
-      return res.status(400).json({ success: false, error: 'Use reset password flow to change password.' });
+      return res.status(400).json({ success: false, error: 'Use reset password to change password.' });
     }
 
     const user = await User.findByIdAndUpdate(userId, updates, { new: true }).select('-password');
@@ -374,16 +379,19 @@ router.put('/editprofile/:id', async (req, res) => {
 });
 
 
+
 // API endpoint to fetch organizer data
+// ✅ Get all users – NO TOKEN REQUIRED
 router.get('/getusers', async (req, res) => {
-    try {
-        const organizers = await User.find();
-        res.status(200).json(organizers);
-    }
-    catch (error) {
-        res.status(500).json({ message: 'Error fetching organizer data' });
-    }
+  try {
+    const users = await User.find().select('-password');
+    res.status(200).json(users);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: 'Error fetching users' });
+  }
 });
+
 router.post('/sendmail', (req, res) => {
     try{
     const { to, senderEmail, subject, description, senderName } = req.body;
