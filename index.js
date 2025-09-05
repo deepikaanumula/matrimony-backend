@@ -15,7 +15,7 @@ app.use(express.json());
 
 // CORS Setup – allow only your frontend domain
 app.use(cors({
-  origin: ['http://localhost:3000','https://ssjmatha.in'],
+  origin: ['https://ssjmatha.in'],
   credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'auth-token','id'] // ✅ add 'auth-token'

@@ -91,6 +91,7 @@ router.post('/page1/createuser', [
             const secPassword = await bcrypt.hash(req.body.password, salt);
             user = await User.create({
                 name: req.body.name,
+                surname: req.body.surname,
                 age: req.body.age,
                 email: req.body.email,
                 phone: req.body.phone,
@@ -102,6 +103,8 @@ router.post('/page1/createuser', [
                 weight: req.body.weight,
                 education: req.body.education,
                 working: req.body.working,
+                companyname: req.body.companyname,
+                income_per_month: req.body.income_per_month,
                 password: secPassword,
                 description: req.body.description,
                 gender: req.body.gender
@@ -120,6 +123,7 @@ router.post('/page1/createuser', [
             console.error(error);
             res.status(500).send("Internal Server Error");
         }
+        console.log("REQ BODY:", req.body);
     })
 
 //ROUTE FOR CREATING AN ORGANIZER
@@ -402,18 +406,18 @@ router.post('/sendmail', (req, res) => {
         port: 465,
         secure: true,
         auth: {
-            user: 'yourmail@gmail.com',
-            pass: 'yourapppassword',
+            user: 'ssjmatha@gmail.com',
+            pass: 'kdlh qdbp yhij huad',
         },
     });
     let mailOptions = {
-        from: 'yourmail@gmail.com',
+        from: 'yssjmatha@gmail.com',
         to: to,
         subject: subject,
         text: description,
         html:
             `<div style="padding:10px;" >
-        <h1>Someone wants to contact you - Perfect Match</h1>
+        <h1>Someone wants to contact you - SSJ Matha</h1>
         <h4>Sender Details</h4>
         <ul>
         <li><b>Name:</b>${senderName}</li>
@@ -475,12 +479,12 @@ router.post('/email-send', [
                 port: 465,
                 secure: true,
                 auth: {
-                    user: 'yourmail@gmail.com',
-                    pass: 'yourapppassword',
+                    user: 'ssjmatha@gmail.com',
+                    pass: 'kdlh qdbp yhij huad',
                 },
             });
             let mailOptions = {
-                from: 'yourmail@gmail.com',
+                from: 'ssjmatha@gmail.com',
                 to: email,
                 subject: otpcode,
                 html:
