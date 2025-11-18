@@ -23,21 +23,12 @@ const JWT_SECRET = "thisISveryImportant@forSecurity";
 //For routing
 const router = express.Router();
 //FOR image uploading
+const { upload, uploadToCloudinary } = require("../middleware/upload");
 
 //FOR setting the directory where our images will be stored.....
-const multer = require("multer");
-const cloudinary = require("../utils/cloudinary");
-const { CloudinaryStorage } = require("multer-storage-cloudinary");
 
-const storage = new CloudinaryStorage({
-  cloudinary: cloudinary,
-  params: {
-    folder: "matrimony_profiles",
-    allowed_formats: ["jpg", "jpeg", "png"],
-  },
-});
 
-const upload = multer({ storage });
+
 
   // FOR image uploading without token authentication
 // ✅ Upload image – NO TOKEN REQUIRED
@@ -49,8 +40,7 @@ router.post("/uploadimage/:id", upload.single("image"), async (req, res) => {
       return res.status(400).json({ success: false, error: "No image uploaded" });
     }
 
-    // Cloudinary automatically gives the URL in req.file.path
-    const imageUrl = req.file.path;
+    const imageUrl = await uploadToCloudinary(req.file.path);
 
     await User.findByIdAndUpdate(userId, { image: imageUrl });
 
