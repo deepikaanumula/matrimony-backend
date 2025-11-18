@@ -23,36 +23,49 @@ const JWT_SECRET = "thisISveryImportant@forSecurity";
 //For routing
 const router = express.Router();
 //FOR image uploading
-const multer = require('multer');
-const path = require('path');
+
 //FOR setting the directory where our images will be stored.....
-const storage = multer.diskStorage({
-    destination: (req, file, cb) => {
-      cb(null, 'uploads/'); // Specify the directory where images will be stored
-    },
-    filename: (req, file, cb) => {
-      const uniqueSuffix = Date.now() + '-' + Math.round(Math.random() * 1E9);
-      cb(null, file.fieldname + '-' + uniqueSuffix + path.extname(file.originalname));
-    },
-  });
-  const upload = multer({ storage });
+const multer = require("multer");
+const cloudinary = require("../utils/cloudinary");
+const { CloudinaryStorage } = require("multer-storage-cloudinary");
+
+const storage = new CloudinaryStorage({
+  cloudinary: cloudinary,
+  params: {
+    folder: "matrimony_profiles",
+    allowed_formats: ["jpg", "jpeg", "png"],
+  },
+});
+
+const upload = multer({ storage });
+
   // FOR image uploading without token authentication
 // ✅ Upload image – NO TOKEN REQUIRED
-router.post('/uploadimage/:id', upload.single('image'), async (req, res) => {
+router.post("/uploadimage/:id", upload.single("image"), async (req, res) => {
   try {
     const userId = req.params.id;
-    if (!userId) return res.status(400).send({ error: "User ID is required" });
-    if (!req.file) return res.status(400).json({ success: false, error: "No image uploaded" });
 
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: "No image uploaded" });
+    }
+
+    // Cloudinary automatically gives the URL in req.file.path
     const imageUrl = req.file.path;
+
     await User.findByIdAndUpdate(userId, { image: imageUrl });
 
-    res.json({ success: true, message: 'Image uploaded successfully' });
+    res.json({
+      success: true,
+      message: "Image uploaded successfully",
+      image: imageUrl,
+    });
+
   } catch (error) {
     console.error(error);
-    res.status(500).send('Internal Server Error');
+    res.status(500).send("Internal Server Error");
   }
 });
+
 
 
 
