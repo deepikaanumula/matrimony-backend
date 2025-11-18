@@ -3,7 +3,7 @@ const path = require("path");
 const fs = require("fs");
 const cloudinary = require("../utils/cloudinary");
 
-// Multer temporary file storage
+
 const storage = multer.diskStorage({
     filename: function (req, file, cb) {
         cb(null, Date.now() + path.extname(file.originalname));
