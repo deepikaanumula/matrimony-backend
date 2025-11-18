@@ -16,8 +16,7 @@ app.use(express.json());
 
 // CORS Setup – allow only your frontend domain
 app.use(cors({
-  origin: ['https://ssjmatha.in'],
-  credentials: true,
+ origin: ['https://ssjmatha.in', 'https://www.ssjmatha.in'],  credentials: true,
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization', 'auth-token','id'] // ✅ add 'auth-token'
 }));
@@ -25,7 +24,7 @@ app.use(cors({
 
 
 //Available Routes
-
+app.options('*', cors());
 app.get('/login', (req, res) => {
   res.send("Login");
 });
